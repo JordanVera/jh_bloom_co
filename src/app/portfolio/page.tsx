@@ -3,12 +3,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import PortfolioGrid from '@/components/portfolio/PortfolioGrid';
 import { COMPANY } from '@/lib/data';
-import { PORTFOLIO_PROJECTS } from '@/lib/portfolio';
 
 export const metadata: Metadata = {
   title: `Portfolio | ${COMPANY.name}`,
-  description:
-    `Browse custom bouquets and event florals by ${COMPANY.name} in Houston, TX.`,
+  description: `Browse custom bouquets and event florals by ${COMPANY.name} in Houston, TX.`,
 };
 
 export default function PortfolioPage() {
@@ -16,7 +14,7 @@ export default function PortfolioPage() {
     <>
       <section className="relative h-64 overflow-hidden sm:h-80">
         <Image
-          src="/portfolio/bouquets/01.jpg"
+          src="/pink-flowers-cta.jpg"
           alt={`Portfolio — ${COMPANY.name}`}
           fill
           priority
@@ -37,7 +35,8 @@ export default function PortfolioPage() {
       <section className="mx-auto max-w-7xl px-6 py-20 lg:px-8">
         <div className="mx-auto mb-14 max-w-2xl text-center">
           <p className="leading-relaxed text-foreground/60">
-            {PORTFOLIO_PROJECTS.length} collections designed by {COMPANY.founder}. Follow{' '}
+            A selection of custom florals designed by{' '}
+            {COMPANY.founder}. Follow{' '}
             <a
               href={COMPANY.instagram}
               target="_blank"

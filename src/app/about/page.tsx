@@ -25,7 +25,7 @@ export default function AboutPage() {
     <>
       <section className="relative h-64 overflow-hidden sm:h-80">
         <Image
-          src="/about/hero.jpg"
+          src="/pink-flowers-cta.jpg"
           alt={COMPANY.name}
           fill
           priority
@@ -60,9 +60,7 @@ export default function AboutPage() {
             <div className="flex flex-col gap-6">
               <h2 className="font-serif text-4xl leading-tight text-foreground sm:text-5xl">
                 {ABOUT_PAGE.heading}{' '}
-                <em className="text-[#d48a96] italic">
-                  {ABOUT_PAGE.emphasis}
-                </em>
+                <em className="text-[#d48a96] italic">{ABOUT_PAGE.emphasis}</em>
               </h2>
 
               {ABOUT_PAGE.paragraphs.map((paragraph) => (

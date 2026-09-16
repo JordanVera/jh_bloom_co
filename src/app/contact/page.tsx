@@ -6,8 +6,7 @@ import { COMPANY, MAP_QUERY } from '@/lib/data';
 
 export const metadata: Metadata = {
   title: `Contact | ${COMPANY.name}`,
-  description:
-    `Get in touch with ${COMPANY.name} to discuss custom bouquets and floral design for your Houston celebration.`,
+  description: `Get in touch with ${COMPANY.name} to discuss custom bouquets and floral design for your Houston celebration.`,
 };
 
 export default function ContactPage() {
@@ -15,7 +14,7 @@ export default function ContactPage() {
     <>
       <section className="relative h-64 sm:h-80 overflow-hidden">
         <Image
-          src="/about/hero.jpg"
+          src="/pink-flowers-cta.jpg"
           alt={`Visit ${COMPANY.name}`}
           fill
           priority

@@ -1,97 +1,157 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  PORTFOLIO_CATEGORIES,
-  PORTFOLIO_PROJECTS,
-  type PortfolioCategory,
-} from '@/lib/portfolio';
-import { cn } from '@/lib/utils';
+import * as Dialog from '@radix-ui/react-dialog';
+import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { PORTFOLIO_IMAGES } from '@/lib/portfolio';
 
 export default function PortfolioGrid() {
-  const [category, setCategory] = useState<'All' | PortfolioCategory>('All');
+  const [selected, setSelected] = useState<number | null>(null);
+  const count = PORTFOLIO_IMAGES.length;
 
-  const projects = useMemo(
-    () =>
-      category === 'All'
-        ? PORTFOLIO_PROJECTS
-        : PORTFOLIO_PROJECTS.filter((project) => project.category === category),
-    [category],
-  );
+  const close = () => setSelected(null);
+  const prev = useCallback(() => {
+    setSelected((current) =>
+      current === null ? 0 : (current - 1 + count) % count,
+    );
+  }, [count]);
+  const next = useCallback(() => {
+    setSelected((current) => (current === null ? 0 : (current + 1) % count));
+  }, [count]);
+
+  useEffect(() => {
+    if (selected === null) return;
+
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'ArrowLeft') prev();
+      if (event.key === 'ArrowRight') next();
+    };
+
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [selected, prev, next]);
 
   return (
-    <div>
-      <div className="mb-12 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
-        {PORTFOLIO_CATEGORIES.map((item) => (
-          <button
-            key={item}
+    <>
+      <div className="columns-1 gap-3 space-y-3 sm:columns-2 lg:columns-3">
+        {PORTFOLIO_IMAGES.map((image, index) => (
+          <motion.button
+            key={image.id}
             type="button"
-            aria-pressed={category === item}
-            onClick={() => setCategory(item)}
-            className={cn(
-              'px-4 py-2 text-[10px] tracking-[0.22em] uppercase transition-colors duration-200',
-              category === item
-                ? 'bg-[#d48a96] text-black'
-                : 'text-foreground/50 hover:text-foreground',
-            )}
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4, delay: Math.min(index * 0.03, 0.3) }}
+            className="group relative mb-3 block w-full break-inside-avoid overflow-hidden bg-muted"
+            onClick={() => setSelected(index)}
+            aria-label={`View photo ${index + 1}`}
           >
-            {item}
-          </button>
+            <Image
+              src={image.src}
+              alt={image.alt}
+              width={1200}
+              height={900}
+              className="h-auto w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              priority={index < 4}
+            />
+            <div className="absolute inset-0 bg-black/0 transition-colors duration-300 group-hover:bg-black/20" />
+          </motion.button>
         ))}
       </div>
 
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={category}
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }}
-          transition={{ duration: 0.25 }}
-          className="grid grid-cols-2 gap-x-3 gap-y-10 sm:gap-x-5 sm:gap-y-12 md:grid-cols-3 lg:grid-cols-4"
-        >
-          {projects.map((project, index) => (
-            <Link
-              key={project.slug}
-              href={`/portfolio/${project.slug}`}
-              className="group block"
-            >
-              <motion.article
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.45,
-                  delay: Math.min(index * 0.04, 0.4),
-                }}
-              >
-                <div className="relative aspect-5/6 overflow-hidden bg-muted">
-                  <Image
-                    src={project.cover}
-                    alt={project.title}
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
-                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-                    priority={index < 4}
-                  />
-                  <div className="absolute inset-0 bg-black/0 transition-colors duration-300 group-hover:bg-black/25" />
-                </div>
-                <div className="mt-4 text-center">
-                  <h2 className="font-serif text-lg text-foreground transition-colors duration-200 group-hover:text-[#d48a96] sm:text-xl">
-                    {project.title}
-                  </h2>
-                  {project.photographer ? (
-                    <p className="mt-1 text-[11px] tracking-[0.12em] text-foreground/45">
-                      {project.photographer}
-                    </p>
-                  ) : null}
-                </div>
-              </motion.article>
-            </Link>
-          ))}
-        </motion.div>
-      </AnimatePresence>
-    </div>
+      <Dialog.Root
+        open={selected !== null}
+        onOpenChange={(open) => !open && close()}
+      >
+        <AnimatePresence>
+          {selected !== null ? (
+            <Dialog.Portal forceMount>
+              <Dialog.Overlay asChild>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 z-50 bg-black/92 backdrop-blur-sm"
+                />
+              </Dialog.Overlay>
+
+              <Dialog.Content asChild>
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.97 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.97 }}
+                  transition={{ duration: 0.25 }}
+                  className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                  onClick={(event) => {
+                    if (event.target === event.currentTarget) close();
+                  }}
+                >
+                  <Dialog.Title className="sr-only">
+                    Portfolio photo {selected + 1} of {count}
+                  </Dialog.Title>
+                  <Dialog.Description className="sr-only">
+                    {PORTFOLIO_IMAGES[selected].alt}
+                  </Dialog.Description>
+
+                  <Dialog.Close className="absolute top-5 right-5 z-10 text-white/60 transition-colors hover:text-white">
+                    <X size={22} />
+                  </Dialog.Close>
+
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      prev();
+                    }}
+                    className="absolute left-3 z-10 p-2 text-white/60 transition-colors hover:text-white md:left-8"
+                    aria-label="Previous photo"
+                  >
+                    <ChevronLeft size={28} />
+                  </button>
+
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={selected}
+                      initial={{ opacity: 0, x: 16 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -16 }}
+                      transition={{ duration: 0.2 }}
+                      className="relative w-full max-w-5xl"
+                    >
+                      <Image
+                        src={PORTFOLIO_IMAGES[selected].src}
+                        alt={PORTFOLIO_IMAGES[selected].alt}
+                        width={1600}
+                        height={1200}
+                        className="mx-auto h-auto max-h-[80vh] w-auto object-contain"
+                        priority
+                      />
+                      <p className="mt-4 text-center text-xs text-white/35">
+                        {selected + 1} / {count}
+                      </p>
+                    </motion.div>
+                  </AnimatePresence>
+
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      next();
+                    }}
+                    className="absolute right-3 z-10 p-2 text-white/60 transition-colors hover:text-white md:right-8"
+                    aria-label="Next photo"
+                  >
+                    <ChevronRight size={28} />
+                  </button>
+                </motion.div>
+              </Dialog.Content>
+            </Dialog.Portal>
+          ) : null}
+        </AnimatePresence>
+      </Dialog.Root>
+    </>
   );
 }
